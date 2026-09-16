@@ -140,6 +140,24 @@ export class XenForoFictionPlugin implements Plugin.PagePlugin {
   }
 
   async parseChapter(chapterPath: string): Promise<string> {
-    throw new Error(`Not implemented yet: ${chapterPath}`);
+    const postId = chapterPath.match(/#post-(\d+)/)?.[1];
+    if (!postId) {
+      throw new Error(
+        `Could not find a post id in chapter path: ${chapterPath}`,
+      );
+    }
+
+    const $ = await this.fetchDoc(chapterPath);
+    const post = $(`article[data-content="post-${postId}"]`);
+    const content = post.find('.message-userContent .bbWrapper').first();
+
+    content.find('blockquote.bbCodeBlock').remove();
+    content.find('.message-signature').remove();
+    content.find('img[data-src]').each((_, img) => {
+      const dataSrc = $(img).attr('data-src');
+      if (dataSrc) $(img).attr('src', dataSrc);
+    });
+
+    return content.html() || '';
   }
 }
