@@ -22,12 +22,16 @@ generator this is built from.
 
 ## Publishing
 
-Pushing to `master` triggers `.github/workflows/publish-plugins.yml`
-(inherited from upstream `lnreader-plugins`, unmodified), which builds and
-publishes the `plugins/v1.0.0` branch this repository's manifest lives on.
-Requires a `REPO_SCOPED_TOKEN` repository secret (a GitHub PAT with
-contents-write access) to be configured once in this repo's GitHub
-settings.
+Published by running `npm run publish:plugins` locally from a checkout of
+this repo, whenever you want to push a new version of the plugins to the
+`plugins/v1.0.0` branch the app reads from. This builds, compiles, and
+generates the manifest, then force-pushes the result to that branch and
+switches back to `master`.
+
+`.github/workflows/publish-plugins.yml` (inherited from upstream
+`lnreader-plugins`, unmodified) is left in the repo but isn't the active
+publishing mechanism here — it would need a `REPO_SCOPED_TOKEN` repository
+secret configured to run, which this repo doesn't have set up.
 
 Forked from [lnreader/lnreader-plugins](https://github.com/lnreader/lnreader-plugins)
 (MIT licensed — see `LICENSE`), stripped down to just the plugins above.
