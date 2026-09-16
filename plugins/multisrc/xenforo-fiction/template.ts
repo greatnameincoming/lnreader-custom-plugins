@@ -78,14 +78,65 @@ export class XenForoFictionPlugin implements Plugin.PagePlugin {
     return this.parseThreadRows($);
   }
 
+  private parseThreadmarkRows($: CheerioAPI): Plugin.ChapterItem[] {
+    const chapters: Plugin.ChapterItem[] = [];
+    $('div.structItem.structItem--threadmark').each((_, el) => {
+      const row = $(el);
+      const link = row.find('.structItem-title a').first();
+      const path = link.attr('href');
+      const name = link.text().trim();
+      if (!path || !name) return;
+      const timestamp = row.attr('data-content-date');
+      chapters.push({
+        name,
+        path,
+        releaseTime: timestamp
+          ? new Date(Number(timestamp) * 1000).toISOString()
+          : null,
+      });
+    });
+    return chapters;
+  }
+
+  private getTotalPages($: CheerioAPI): number {
+    const max = $('.pageNavWrapper input.js-pageJumpPage').first().attr('max');
+    return max ? Number(max) : 1;
+  }
+
   async parseNovel(
     novelPath: string,
   ): Promise<Plugin.SourceNovel & { totalPages: number }> {
-    throw new Error(`Not implemented yet: ${novelPath}`);
+    const $ = await this.fetchDoc(`${novelPath}threadmarks`);
+
+    const chapters = this.parseThreadmarkRows($);
+    if (chapters.length === 0) {
+      throw new Error(
+        'This thread has no threadmarks; unsupported by this plugin.',
+      );
+    }
+
+    return {
+      path: novelPath,
+      name: $('h1.p-title-value').first().text().trim() || 'Untitled',
+      cover: defaultCover,
+      author: $('div.structItem.structItem--threadmark')
+        .first()
+        .attr('data-content-author'),
+      summary: $('.threadmarkListingHeader-extraInfoChild .bbWrapper')
+        .first()
+        .text()
+        .trim(),
+      status: NovelStatus.Unknown,
+      chapters,
+      totalPages: this.getTotalPages($),
+    };
   }
 
   async parsePage(novelPath: string, page: string): Promise<Plugin.SourcePage> {
-    throw new Error(`Not implemented yet: ${novelPath} ${page}`);
+    const $ = await this.fetchDoc(
+      `${novelPath}threadmarks?per_page=25&page=${page}`,
+    );
+    return { chapters: this.parseThreadmarkRows($) };
   }
 
   async parseChapter(chapterPath: string): Promise<string> {
