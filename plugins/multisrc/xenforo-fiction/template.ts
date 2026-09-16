@@ -31,7 +31,7 @@ export class XenForoFictionPlugin implements Plugin.PagePlugin {
   name: string;
   icon: string;
   site: string;
-  version = '1.0.0';
+  version = '1.0.1';
   options: XenForoFictionOptions;
 
   constructor(metadata: XenForoFictionMetadata) {
