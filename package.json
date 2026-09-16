@@ -1,7 +1,7 @@
 {
-  "name": "lnreader-plugins",
-  "version": "3.0.0",
-  "description": "Plugins repo for LNReader",
+  "name": "lnreader-custom-plugins",
+  "version": "1.0.0",
+  "description": "Personal LNReader plugin repository (SpaceBattles, SufficientVelocity)",
   "main": "index.js",
   "type": "module",
   "scripts": {
