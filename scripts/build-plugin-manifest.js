@@ -205,9 +205,9 @@ if (!ONLY_NEW)
 
 // check for broken plugins
 for (let language in languages) {
-  const tsFiles = fs.readdirSync(
-    path.join('./plugins', language.toLocaleLowerCase()),
-  );
+  const langDir = path.join('./plugins', language.toLocaleLowerCase());
+  if (!fs.existsSync(langDir)) continue;
+  const tsFiles = fs.readdirSync(langDir);
   tsFiles
     .filter(f => f.endsWith('.broken.ts'))
     .forEach(fn => {

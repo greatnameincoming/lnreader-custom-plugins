@@ -28,7 +28,7 @@
     // "moduleDetection": "auto",                        /* Control what method is used to detect module-format JS files. */
     /* Modules */
     "module": "CommonJS" /* Specify what module code is generated. */,
-    // "rootDir": "./",                                  /* Specify the root folder within your source files. */
+    "rootDir": "./plugins" /* Pinned explicitly: with only one active language folder (plugins/english), tsc's default rootDir inference collapses to that folder itself, dropping the "english" segment from compiled output paths and breaking build-plugin-manifest.js's per-language directory lookup. */,
     "moduleResolution": "node10" /* Specify how TypeScript looks up a file from a given module specifier. */,
     "baseUrl": ".",
     "paths": {
