@@ -6,6 +6,13 @@ import { CheerioAPI, load as parseHTML } from 'cheerio';
 
 export type XenForoFictionOptions = {
   discoveryNode: string;
+  /**
+   * Set when this site's /search/ is blocked for automated requests
+   * (e.g. Cloudflare managed challenge, confirmed present on SpaceBattles
+   * regardless of pacing/headers). searchNovels throws a clear error
+   * instead of attempting a request that will always fail.
+   */
+  searchUnavailable?: boolean;
 };
 
 export type XenForoFictionMetadata = {
@@ -44,14 +51,34 @@ export class XenForoFictionPlugin implements Plugin.PagePlugin {
     return parseHTML(body);
   }
 
+  private resolveCover(row: ReturnType<CheerioAPI>): string {
+    const src = row.find('.avatar img').first().attr('src');
+    return src ? new URL(src, this.site).toString() : defaultCover;
+  }
+
   private parseThreadRows($: CheerioAPI): Plugin.NovelItem[] {
     const novels: Plugin.NovelItem[] = [];
     $('div.structItem.structItem--thread').each((_, el) => {
-      const link = $(el).find('.structItem-title a').first();
+      const row = $(el);
+      if (row.find('.structItem-status--sticky').length > 0) return;
+      const link = row.find('.structItem-title a').first();
       const path = link.attr('href');
       const name = link.text().trim();
       if (!path || !name) return;
-      novels.push({ name, path, cover: defaultCover });
+      novels.push({ name, path, cover: this.resolveCover(row) });
+    });
+    return novels;
+  }
+
+  private parseSearchRows($: CheerioAPI): Plugin.NovelItem[] {
+    const novels: Plugin.NovelItem[] = [];
+    $('li.block-row').each((_, el) => {
+      const row = $(el);
+      const link = row.find('.contentRow-title a').first();
+      const path = link.attr('href');
+      const name = link.text().trim();
+      if (!path || !name) return;
+      novels.push({ name, path, cover: this.resolveCover(row) });
     });
     return novels;
   }
@@ -65,17 +92,54 @@ export class XenForoFictionPlugin implements Plugin.PagePlugin {
     return this.parseThreadRows($);
   }
 
-  async searchNovels(
-    searchTerm: string,
-    pageNo: number,
-  ): Promise<Plugin.NovelItem[]> {
-    const params = new URLSearchParams({
-      q: searchTerm,
-      o: 'relevance',
-      page: pageNo.toString(),
+  async searchNovels(searchTerm: string): Promise<Plugin.NovelItem[]> {
+    if (this.options.searchUnavailable) {
+      throw new Error(
+        `${this.name} blocks automated access to /search/ (Cloudflare); search is not available for this source. Browse the listing instead.`,
+      );
+    }
+
+    // XenForo's search is a CSRF-protected POST, not a plain GET with query
+    // params (GET /search/?q=... just serves the empty search form) — the
+    // CSRF token is bound to a session cookie issued by the GET below, so
+    // that cookie must be forwarded explicitly on the POST (fetch does not
+    // do this automatically across separate calls, and cannot be relied on
+    // to do so inside the app's own fetch runtime either).
+    const searchPageUrl = new URL('search/', this.site).toString();
+    const getResult = await fetchApi(searchPageUrl, {
+      headers: { ...BROWSER_HEADERS, Referer: this.site },
     });
-    const $ = await this.fetchDoc(`search/?${params.toString()}`);
-    return this.parseThreadRows($);
+    const getHtml = await getResult.text();
+    const token = parseHTML(getHtml)('input[name="_xfToken"]')
+      .first()
+      .attr('value');
+    const rawSetCookie = getResult.headers.getSetCookie
+      ? getResult.headers.getSetCookie()
+      : getResult.headers.get('set-cookie')
+        ? [getResult.headers.get('set-cookie') as string]
+        : [];
+    const cookie = rawSetCookie.map(c => c.split(';')[0]).join('; ');
+
+    const body = new URLSearchParams({
+      keywords: searchTerm,
+      'c[title_only]': '1',
+      _xfToken: token ?? '',
+    });
+    const postResult = await fetchApi(
+      new URL('search/search', this.site).toString(),
+      {
+        method: 'POST',
+        headers: {
+          ...BROWSER_HEADERS,
+          Referer: searchPageUrl,
+          'Content-Type': 'application/x-www-form-urlencoded',
+          Cookie: cookie,
+        },
+        body: body.toString(),
+      },
+    );
+    const html = await postResult.text();
+    return this.parseSearchRows(parseHTML(html));
   }
 
   private parseThreadmarkRows($: CheerioAPI): Plugin.ChapterItem[] {
