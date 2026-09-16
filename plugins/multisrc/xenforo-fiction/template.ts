@@ -44,15 +44,38 @@ export class XenForoFictionPlugin implements Plugin.PagePlugin {
     return parseHTML(body);
   }
 
+  private parseThreadRows($: CheerioAPI): Plugin.NovelItem[] {
+    const novels: Plugin.NovelItem[] = [];
+    $('div.structItem.structItem--thread').each((_, el) => {
+      const link = $(el).find('.structItem-title a').first();
+      const path = link.attr('href');
+      const name = link.text().trim();
+      if (!path || !name) return;
+      novels.push({ name, path, cover: defaultCover });
+    });
+    return novels;
+  }
+
   async popularNovels(pageNo: number): Promise<Plugin.NovelItem[]> {
-    throw new Error(`Not implemented yet: ${pageNo}`);
+    const path =
+      pageNo > 1
+        ? `${this.options.discoveryNode}page-${pageNo}`
+        : this.options.discoveryNode;
+    const $ = await this.fetchDoc(path);
+    return this.parseThreadRows($);
   }
 
   async searchNovels(
     searchTerm: string,
     pageNo: number,
   ): Promise<Plugin.NovelItem[]> {
-    throw new Error(`Not implemented yet: ${searchTerm} ${pageNo}`);
+    const params = new URLSearchParams({
+      q: searchTerm,
+      o: 'relevance',
+      page: pageNo.toString(),
+    });
+    const $ = await this.fetchDoc(`search/?${params.toString()}`);
+    return this.parseThreadRows($);
   }
 
   async parseNovel(
