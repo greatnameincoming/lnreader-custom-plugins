@@ -1,60 +1,33 @@
-# LNReader Plugins
+# lnreader-custom-plugins
 
-<p>
-<img alt="Total number of available plugins" src="https://raw.githubusercontent.com/LNReader/lnreader-plugins/plugins/v3.0.0/total.svg">
-<img alt="Open plugin requests" src="https://img.shields.io/github/issues/lnreader/lnreader-plugins/Plugin%20Request?color=success&label=plugin%20requests">
-<img alt="Open bug reports" src="https://img.shields.io/github/issues/lnreader/lnreader-plugins/Bug?color=red&label=bugs">
-</p>
+Personal [LNReader](https://github.com/LNReader/lnreader) plugin repository.
 
-Community-driven plugin repository for [LNReader](https://github.com/LNReader/lnreader). This repository hosts plugins and manages related issues and requests.
+[![Add to LNReader](https://img.shields.io/badge/LNReader-Add%20Repository-blue)](lnreader://repo/add?url=https%3A%2F%2Fraw.githubusercontent.com%2Fgreatnameincoming%2Flnreader-custom-plugins%2Fplugins%2Fv1.0.0%2F.dist%2Fplugins.min.json)
 
-## Quick Start
-
-**Prerequisites:** Node.js >= 22
-
-```bash
-npm install
-npm run dev:start
-```
-
-## Documentation
-
-- **[Quick Start Guide](./docs/quickstart.md)** - Create your first plugin
-- **[Plugin Development](./docs/docs.md)** - Complete API reference
-- **[Testing Guide](./docs/website-tutorial.md)** - Test plugins using the web interface
-- **[Live Check](./docs/testing.md)** - Required `npm run check:plugin` check before opening a PR
-- **[Komga Plugin](./docs/komga-plugin.md)** - Self-hosted server integration
-
-## Testing Methods
-
-### Web Interface
-
-```bash
-npm run dev:start
-```
-
-Open [localhost:3000](http://localhost:3000) to test plugins interactively. See the [testing guide](./docs/website-tutorial.md) for details.
-
-### Mobile App
-
-**From GitHub (Automated):**
-
-Push your changes to the `master` branch. The [GitHub Action](./.github/workflows/publish-plugins.yml) automatically builds and publishes plugins to the `plugins` branch.
-
-Add your repository URL to the app:
+Tap the badge above on a device with LNReader installed, or add this URL
+manually under LNReader's repository settings:
 
 ```
-https://raw.githubusercontent.com/<username>/<repo>/plugins/<tag>/.dist/plugins.min.json
+https://raw.githubusercontent.com/greatnameincoming/lnreader-custom-plugins/plugins/v1.0.0/.dist/plugins.min.json
 ```
 
-**From Localhost:**
+## Plugins
 
-```bash
-npm run serve:dev
-```
+- **SpaceBattles** — reads Creative Writing forum threads via threadmarks.
+- **SufficientVelocity** — reads User Fiction forum threads via threadmarks.
 
-Add `http://10.0.2.2/.dist/plugins.min.json` (Android emulator) to the app. Requires `.env` configuration (see `.env.template`).
+Quests, QuestionableQuesting, and non-threadmarked threads are not
+supported. See `plugins/multisrc/xenforo-fiction/README.md` for the
+generator this is built from.
 
-## Disclaimer
+## Publishing
 
-The developers are not affiliated with any content providers. If you are a non-aggregator website owner, you may request plugin removal via [Discord](https://discord.gg/QdcWN4MD63) or by [creating an issue](https://github.com/LNReader/lnreader-plugins/issues/new). Removed sites are added to the [blacklist](BLACKLIST.json).
+Pushing to `master` triggers `.github/workflows/publish-plugins.yml`
+(inherited from upstream `lnreader-plugins`, unmodified), which builds and
+publishes the `plugins/v1.0.0` branch this repository's manifest lives on.
+Requires a `REPO_SCOPED_TOKEN` repository secret (a GitHub PAT with
+contents-write access) to be configured once in this repo's GitHub
+settings.
+
+Forked from [lnreader/lnreader-plugins](https://github.com/lnreader/lnreader-plugins)
+(MIT licensed — see `LICENSE`), stripped down to just the plugins above.
