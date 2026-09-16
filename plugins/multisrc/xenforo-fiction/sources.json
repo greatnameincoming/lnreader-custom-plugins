@@ -1,0 +1,14 @@
+[
+  {
+    "id": "spacebattles",
+    "sourceSite": "https://forums.spacebattles.com/",
+    "sourceName": "SpaceBattles",
+    "options": { "discoveryNode": "forums/creative-writing.18/" }
+  },
+  {
+    "id": "sufficientvelocity",
+    "sourceSite": "https://forums.sufficientvelocity.com/",
+    "sourceName": "SufficientVelocity",
+    "options": { "discoveryNode": "forums/user-fiction.2/" }
+  }
+]
