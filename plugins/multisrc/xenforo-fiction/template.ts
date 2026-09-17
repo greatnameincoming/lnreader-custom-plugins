@@ -6,14 +6,9 @@ import { CheerioAPI, load as parseHTML } from 'cheerio';
 
 export type XenForoFictionOptions = {
   discoveryNode: string;
-  /**
-   * Set when this site's /search/ is blocked for automated requests
-   * (e.g. Cloudflare managed challenge, confirmed present on SpaceBattles
-   * regardless of pacing/headers). searchNovels throws a clear error
-   * instead of attempting a request that will always fail.
-   */
-  searchUnavailable?: boolean;
 };
+
+const CLOUDFLARE_CHALLENGE_MARKER = /Just a moment/i;
 
 export type XenForoFictionMetadata = {
   id: string;
@@ -31,7 +26,7 @@ export class XenForoFictionPlugin implements Plugin.PagePlugin {
   name: string;
   icon: string;
   site: string;
-  version = '1.0.1';
+  version = '1.0.2';
   options: XenForoFictionOptions;
 
   constructor(metadata: XenForoFictionMetadata) {
@@ -93,12 +88,6 @@ export class XenForoFictionPlugin implements Plugin.PagePlugin {
   }
 
   async searchNovels(searchTerm: string): Promise<Plugin.NovelItem[]> {
-    if (this.options.searchUnavailable) {
-      throw new Error(
-        `${this.name} blocks automated access to /search/ (Cloudflare); search is not available for this source. Browse the listing instead.`,
-      );
-    }
-
     // XenForo's search is a CSRF-protected POST, not a plain GET with query
     // params (GET /search/?q=... just serves the empty search form) — the
     // CSRF token is bound to a session cookie issued by the GET below, so
@@ -110,6 +99,19 @@ export class XenForoFictionPlugin implements Plugin.PagePlugin {
       headers: { ...BROWSER_HEADERS, Referer: this.site },
     });
     const getHtml = await getResult.text();
+
+    // Some sources (confirmed on SpaceBattles) front /search/ with a
+    // Cloudflare managed challenge that a plain request can't pass. The
+    // app shares cookies between its WebView and this fetch layer, so if
+    // the user has recently solved the challenge by opening this source in
+    // WebView and searching there once, this same request should succeed
+    // instead of hitting this branch.
+    if (!getResult.ok || CLOUDFLARE_CHALLENGE_MARKER.test(getHtml)) {
+      throw new Error(
+        `${this.name} is blocking this search request (Cloudflare). Open ${this.name} in WebView (the globe icon), search once there to pass the check, then try again here.`,
+      );
+    }
+
     const token = parseHTML(getHtml)('input[name="_xfToken"]')
       .first()
       .attr('value');
