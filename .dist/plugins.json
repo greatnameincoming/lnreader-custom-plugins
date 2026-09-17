@@ -1,0 +1,20 @@
+[
+	{
+		"id": "spacebattles",
+		"name": "SpaceBattles",
+		"site": "https://forums.spacebattles.com/",
+		"lang": "English",
+		"version": "1.0.2",
+		"url": "https://raw.githubusercontent.com/greatnameincoming/lnreader-custom-plugins/plugins/v1.0.0/.js/src/plugins/english/SpaceBattles[xenforo-fiction].js",
+		"iconUrl": "https://raw.githubusercontent.com/greatnameincoming/lnreader-custom-plugins/plugins/v1.0.0/public/static/multisrc/xenforo-fiction/spacebattles/icon.png"
+	},
+	{
+		"id": "sufficientvelocity",
+		"name": "SufficientVelocity",
+		"site": "https://forums.sufficientvelocity.com/",
+		"lang": "English",
+		"version": "1.0.2",
+		"url": "https://raw.githubusercontent.com/greatnameincoming/lnreader-custom-plugins/plugins/v1.0.0/.js/src/plugins/english/SufficientVelocity[xenforo-fiction].js",
+		"iconUrl": "https://raw.githubusercontent.com/greatnameincoming/lnreader-custom-plugins/plugins/v1.0.0/public/static/multisrc/xenforo-fiction/sufficientvelocity/icon.png"
+	}
+]
